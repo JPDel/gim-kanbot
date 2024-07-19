@@ -1,6 +1,6 @@
 # Kanbot
 
-:clipboard: A lightweight Kanban board bot, for your Discord! <br /><br />
+Fork of kanban board bot modified for my gim group  <br /><br />
 
 ![logo](https://media.discordapp.net/attachments/449647907772170253/449770623187812362/kanbotcircle.png)
 

@@ -26,6 +26,27 @@ export class KanbanBoard {
     public addToInProgress(task: Task) { this._inProgress.add(task); }
     public addToComplete(task: Task) { this._complete.add(task); }
 
+    public addAssignee(task: Task, assignee: string) {
+        if(task.assignees.includes(assignee)){return;}
+        task.addAssignee(assignee);
+    }
+
+    public removeAssignee(task: Task, assignee: string) {
+        task.removeAssignee(assignee);
+    }
+
+    public addDependencies(parent: Task, child: Task) {
+        parent.addDependency(child);
+        parent.isPrimitive = false;
+    }
+
+    public removeDependencies(parent: Task, child: Task) {
+        parent.removeDependency(child);
+        if (parent.dependencies.length == 0) {
+            parent.isPrimitive = true;
+        }
+    }
+
     /**
      * Removers
      * @param task to remove.
@@ -45,6 +66,7 @@ export class KanbanBoard {
         this._backlog.clear();
         this._inProgress.clear();
         this._complete.clear();
+        this.currentTaskId = 0;
     }
 
     private getColumns(): Kanban.Board.Column[] {
@@ -57,9 +79,9 @@ export class KanbanBoard {
 
     public containsTask(task: Task): boolean;
     public containsTask(taskName: string): boolean;
-    public containsTask(taskOrTaskName: Task | string): boolean {
+    public containsTask(taskIdentifier: Task | string): boolean {
         try {
-            const task: Task = Task.getTaskFromProperties(taskOrTaskName);
+            const task: Task = Task.getTaskFromProperties(taskIdentifier);
             const columns: Kanban.Board.Column[] = [...(this.getColumns().values())];
             return columns.some(column => column.contains(task));
         } catch (error) {
@@ -70,15 +92,24 @@ export class KanbanBoard {
 	
 	public findMatch(task: Task): Promise<Task>;
 	public findMatch(taskName: string): Promise<Task>;
-	public findMatch(taskOrTaskName: Task | string): Promise<Task> {
+	public findMatch(taskIdentifier: Task | string): Promise<Task> {
 		try {
-			const task = Task.getTaskFromProperties(taskOrTaskName);
-			const match: Task | undefined = this.getAllTasks().find(item => item.matches(task));
-			
-			if (!!match) {
-				return Promise.resolve(match);
-			}
-			return Promise.reject(new Error('No match found'));
+
+            var match: Task | undefined;
+            
+            // This is a hackjob solution, but I wanted to be able to search for a task by id -Simmons
+            if (typeof taskIdentifier === 'string' && !isNaN(parseInt(taskIdentifier))) { 
+                match = this.getAllTasks().find(task => task.taskId == parseInt(taskIdentifier))
+            }
+            else {
+                const task = Task.getTaskFromProperties(taskIdentifier);
+			    match = this.getAllTasks().find(item => item.matches(task));
+            }
+
+            if (!!match) {
+                return Promise.resolve(match);
+            }
+            return Promise.reject(new Error('No match found'));
         } catch (error) {
             return Promise.reject(error);
         }
@@ -87,8 +118,8 @@ export class KanbanBoard {
     // have to do it this way for method overloading
     public checkColumnsForMatchingEntry(task: Task): string;
     public checkColumnsForMatchingEntry(taskName: string): string;
-    public checkColumnsForMatchingEntry(taskOrTaskName: Task | string): string {
-        const task: Task = Task.getTaskFromProperties(taskOrTaskName);
+    public checkColumnsForMatchingEntry(taskIdentifier: Task | string): string {
+        const task: Task = Task.getTaskFromProperties(taskIdentifier);
         this.getColumns().forEach(column => {
             if (column.contains(task)) {
                 return column.getName();

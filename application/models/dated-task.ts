@@ -13,7 +13,7 @@ export class DatedTask extends Task {
         createdDate: Date = new Date(),
         addToColumnDate: Date = new Date()) {
 
-        super(name, creator, status, taskId, assignee);
+        super(name, creator, status, taskId);
         this._createdDate = createdDate;
         this._addToColumnDate = addToColumnDate;
     }

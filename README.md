@@ -16,7 +16,7 @@ If you are not familiar with a kanban board [here](https://leankit.com/learn/kan
 clone this repository
 
 ```
-$ git clone git@git:seansylee/kanban-board-bot.git
+$ git clone git@git:PDel/gim-kanbot.git
 ```
 
 install the necessary node modules
